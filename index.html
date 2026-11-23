@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nuestra oficina</title>
+  <link id="favicon" rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ======= Entrada ======= -->
+  <div id="login" class="overlay">
+    <div class="panel login-card">
+      <h1>Nuestra oficina <span class="heart">♥</span></h1>
+      <p class="sub">¿Quién eres?</p>
+      <div class="roles">
+        <button class="role" data-role="yo"><canvas width="10" height="14"></canvas><span></span></button>
+        <button class="role" data-role="ella"><canvas width="10" height="14"></canvas><span></span></button>
+      </div>
+      <label class="field">
+        <span>Código de la oficina</span>
+        <div class="row">
+          <input id="roomInput" autocomplete="off" spellcheck="false" placeholder="ej. jose-y-ella-x7k2p9" />
+          <button id="genRoom" class="px-btn small" type="button" title="Generar código">🎲</button>
+        </div>
+      </label>
+      <p id="loginHint" class="hint"></p>
+      <button id="enterBtn" class="px-btn big" disabled>Entrar</button>
+      <p id="demoNote" class="hint demo" hidden>Modo demo (sin Firebase): abre esta página en dos pestañas para probar.</p>
+    </div>
+  </div>
+
+  <!-- ======= App ======= -->
+  <div id="app" hidden>
+    <main id="stage">
+      <div id="canvasWrap">
+        <canvas id="game"></canvas>
+        <div id="clock"></div>
+        <div id="prompt" hidden></div>
+        <div id="toasts"></div>
+        <div id="itemPop" class="panel" hidden></div>
+      </div>
+      <div id="hud" class="panel">
+        <div class="hud-group">
+          <span class="hud-title">Mi estatus</span>
+          <div id="statusBtns" class="btn-row"></div>
+        </div>
+        <div class="hud-group">
+          <span class="hud-title">Acciones</span>
+          <div class="btn-row">
+            <button id="giftBtn" class="px-btn">🎁 Llevar regalo</button>
+            <button id="dropBtn" class="px-btn" hidden>✋ Soltar</button>
+            <button id="invBtn" class="px-btn">🎒 Inventario</button>
+            <button id="pokeBtn" class="px-btn pink">👉 Poke</button>
+            <button id="notifBtn" class="px-btn" hidden>🔔 Avisos</button>
+          </div>
+        </div>
+        <div class="hud-group">
+          <span class="hud-title">Silla y música</span>
+          <div class="btn-row">
+            <button id="sitBtn" class="px-btn">🪑 Sentarme</button>
+            <button id="spinBtn" class="px-btn" hidden>🔄 Girar</button>
+            <button id="musicBtn" class="px-btn">🎵 Mi música</button>
+          </div>
+        </div>
+        <div class="hud-group">
+          <span class="hud-title">Voz de proximidad</span>
+          <div class="btn-row">
+            <button id="voiceBtn" class="px-btn">🎤 Activar voz</button>
+            <button id="muteBtn" class="px-btn" hidden>🔈 Silenciar</button>
+            <span id="voiceInfo" class="voice-info">Apagada</span>
+          </div>
+          <label class="check"><input type="checkbox" id="autoSilence" /> Pausar voz cuando estoy en llamada/junta</label>
+        </div>
+        <p class="keys">Muévete con <b>WASD</b>/flechas o con clic · <b>F</b> sentarte/pararte · <b>R</b> girar la silla · <b>E</b> dejar regalo · <b>Enter</b> chatear · clic en alguien para ver qué hace</p>
+      </div>
+    </main>
+
+    <aside id="side">
+      <section id="people" class="panel"></section>
+      <section id="chat" class="panel">
+        <div class="chat-head">💬 Chat <span id="connDot" class="dot"></span></div>
+        <div id="messages"></div>
+        <form id="chatForm">
+          <input id="chatInput" maxlength="400" autocomplete="off" placeholder="Escribe algo bonito…" />
+          <button class="px-btn small">➤</button>
+        </form>
+      </section>
+    </aside>
+  </div>
+
+  <!-- ======= Selector de regalos ======= -->
+  <div id="giftModal" class="overlay" hidden>
+    <div class="panel modal">
+      <h2>¿Qué le llevas?</h2>
+      <div id="giftGrid"></div>
+      <label class="field">
+        <span>Nota (opcional)</span>
+        <input id="giftNote" maxlength="120" placeholder="Para que tengas un bonito día…" />
+      </label>
+      <div class="btn-row end">
+        <button id="giftCancel" class="px-btn">Cancelar</button>
+        <button id="giftOk" class="px-btn pink" disabled>Cargar regalo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= Inventario ======= -->
+  <div id="invModal" class="overlay" hidden>
+    <div class="panel modal">
+      <h2>🎒 Mi inventario</h2>
+      <p class="hint">Los regalos que guardas de tu escritorio se quedan aquí para siempre.</p>
+      <div id="invList"></div>
+      <div class="btn-row end"><button id="invClose" class="px-btn">Cerrar</button></div>
+    </div>
+  </div>
+
+  <!-- ======= Música ======= -->
+  <div id="musicModal" class="overlay" hidden>
+    <div class="panel modal">
+      <h2>🎵 ¿Qué estás escuchando?</h2>
+      <div id="spotifyBox"></div>
+      <label class="field">
+        <span>Canción — artista</span>
+        <input id="musicTitle" maxlength="80" placeholder="Ej. Ojitos lindos — Bad Bunny" />
+      </label>
+      <label class="field">
+        <span>Link (opcional)</span>
+        <input id="musicUrl" maxlength="300" placeholder="https://open.spotify.com/track/…" />
+      </label>
+      <div class="btn-row end">
+        <button id="musicClear" class="px-btn">Quitar</button>
+        <button id="musicCancel" class="px-btn">Cancelar</button>
+        <button id="musicOk" class="px-btn pink">Compartir</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
